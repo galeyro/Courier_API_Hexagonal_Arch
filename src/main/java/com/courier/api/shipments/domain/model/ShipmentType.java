@@ -1,7 +1,7 @@
 package com.courier.api.shipments.domain.model;
 
 public enum ShipmentType {
-    STANDART,
+    STANDARD,
     EXPRESS,
     INTERNATIONAL,
     THIRD_PARTY_CARRIER

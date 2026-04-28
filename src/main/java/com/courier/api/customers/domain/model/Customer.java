@@ -5,84 +5,77 @@ import java.util.UUID;
 
 public class Customer {
 
-    //model
-    private UUID id;
-    private String name;
-    private String email;
-    private String password;
-    private CustomerRole role;
-    private boolean isActive;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private final UUID id;
+    private final String name;
+    private final String email;
+    private final String password;
+    private final CustomerRole role;
+    private final boolean active;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
-    //constructor using builder
-    private Customer(Builder builder) {
-        this.id = builder.id;
-        this.name = builder.name;
-        this.email = builder.email;
-        this.password = builder.password;
-        this.role = builder.role;
-        this.isActive = builder.isActive;
-        this.createdAt = builder.createdAt;
-        this.updatedAt = builder.updatedAt;
+    public Customer(
+            UUID id,
+            String name,
+            String email,
+            String password,
+            CustomerRole role,
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Customer newCustomer(String name, String email, String password, CustomerRole role) {
+        LocalDateTime now = LocalDateTime.now();
+        return new Customer(null, name, email, password, role, true, now, now);
     }
 
-    public static class Builder {
-        private UUID id;
-        private String name;
-        private String email;
-        private String password;
-        private CustomerRole role;
-        private boolean isActive;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+    public Customer update(String newName, CustomerRole newRole) {
+        return new Customer(id, newName, email, password, newRole, active, createdAt, LocalDateTime.now());
+    }
 
-        public Builder id(UUID id) {
-            this.id = id;
-            return this;
-        }
+    public Customer deactivate() {
+        return new Customer(id, name, email, password, role, false, createdAt, LocalDateTime.now());
+    }
 
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
+    public UUID getId() {
+        return id;
+    }
 
-        public Builder email(String email) {
-            this.email = email;
-            return this;
-        }
+    public String getName() {
+        return name;
+    }
 
-        public Builder password(String password) {
-            this.password = password;
-            return this;
-        }
+    public String getEmail() {
+        return email;
+    }
 
-        public Builder role(CustomerRole role) {
-            this.role = role;
-            return this;
-        }
+    public String getPassword() {
+        return password;
+    }
 
-        public Builder isActive(boolean isActive) {
-            this.isActive = isActive;
-            return this;
-        }
+    public CustomerRole getRole() {
+        return role;
+    }
 
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
+    public boolean isActive() {
+        return active;
+    }
 
-        public Builder updatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-            return this;
-        }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-        public Customer build() {
-            return new Customer(this);
-        }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

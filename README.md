@@ -1,137 +1,141 @@
+# Courier API
 
-# Reto Técnico — Courier API
+API de gestión de envíos construida con **Spring Boot 3**, **PostgreSQL** y **Kafka**, aplicando **arquitectura hexagonal**, **Strategy** para las modalidades de envío y **Observer** mediante eventos.
 
-**Duración estimada:** 3 a 5 días · **Dominio fijo:** Gestión de envíos / paquetería · **Stack:** libre
+## Stack elegido
 
-## 1. Contexto
+- **Spring Boot + JPA**: acelera la construcción de una API robusta con validación, persistencia y configuración madura.
+- **PostgreSQL**: cumple el requisito de persistencia real y permite almacenar `metadata` como `jsonb`.
+- **Kafka**: encaja muy bien con el patrón Observer y desacopla notificaciones y auditoría.
+- **Springdoc OpenAPI**: publica Swagger en `/api/docs`.
 
-En las sesiones anteriores construimos un `bank-api` donde aplicamos arquitectura hexagonal, el patrón **Strategy** para distintos tipos de transferencia y el patrón **Observer** a través de Kafka para desacoplar notificaciones y auditoría.
+## Arquitectura
 
-En este reto replicarás **los mismos conceptos y la misma calidad técnica** pero sobre un dominio diferente: una **API de gestión de envíos (Courier)**. No se trata de copiar código: se trata de demostrar que entendiste los patrones lo suficiente para aplicarlos en otro contexto.
+La solución está organizada por módulos:
 
-## 2. Dominio del reto
+- `customers`
+- `shipments`
+- `shared/events`
+- `notifications`
 
-Tu API administra **clientes** (`Customer`) que envían y reciben **paquetes** (`Shipment`). Cada envío se despacha bajo una de **cuatro modalidades** con reglas propias.
+Cada módulo sigue un enfoque hexagonal:
 
-### Entidades principales
+- `domain/`: modelos, excepciones y puertos
+- `application/`: casos de uso, DTOs y estrategias
+- `infrastructure/`: REST, persistencia, Kafka y configuración
 
-**Customer**
-- `id` (UUID), `name`, `email` (único), `password` (hasheado), `role` (`ADMIN` | `SENDER`), `isActive`, timestamps.
+## Patrones aplicados
 
-**Shipment**
-- `id` (UUID), `senderId`, `recipientId`, `declaredValue` (decimal), `shippingCost` (decimal, calculado por la estrategia), `type`, `status`, `metadata` (JSON), timestamps.
-- `type`: `STANDARD` | `EXPRESS` | `INTERNATIONAL` | `THIRD_PARTY_CARRIER`.
-- `status`: `PENDING` | `DELIVERED` | `IN_CUSTOMS` | `FAILED`.
+- **Strategy**:
+  - `ShippingStrategyPort`
+  - `StandardShippingStrategy`
+  - `ExpressShippingStrategy`
+  - `InternationalShippingStrategy`
+  - `ThirdPartyCarrierShippingStrategy`
+- **Observer**:
+  - `EventPublisher` como puerto
+  - `KafkaEventPublisher` como adaptador
+  - dos consumers independientes:
+    - `notifications-consumer`
+    - `audit-consumer`
 
-### Reglas de negocio por modalidad (Strategy)
+## Requisitos cubiertos
 
-| Tipo | Costo (`shippingCost`) | Estado final | Validaciones específicas |
-|---|---|---|---|
-| `STANDARD` | 0.1 % de `declaredValue`, mínimo $5 000 | `DELIVERED` inmediato | `senderId != recipientId`; `metadata.weightKg <= 20` |
-| `EXPRESS` | $15 000 fijo | `DELIVERED` inmediato | `metadata.weightKg <= 5`; `declaredValue <= 3 000 000` |
-| `INTERNATIONAL` | $50 000 + 2 % de `declaredValue` | `IN_CUSTOMS` (queda pendiente de aduana) | `metadata.destinationCountry` y `metadata.customsDeclaration` obligatorios; `declaredValue <= 50 000 000` |
-| `THIRD_PARTY_CARRIER` | 5 % de `declaredValue` | `DELIVERED` inmediato | `metadata.carrierName` y `metadata.externalTrackingId` obligatorios |
+- Persistencia real con PostgreSQL
+- `metadata` almacenado como `jsonb`
+- Mapper pattern entre dominio y entidades JPA
+- DTOs con Jakarta Validation
+- Excepciones de dominio mapeadas a HTTP
+- Swagger disponible en `/api/docs`
+- `docker-compose.yml` con PostgreSQL y Kafka
 
-Reglas comunes: `declaredValue > 0`, ambos clientes deben existir y estar activos, `senderId != recipientId`.
+## Cómo levantar el proyecto
 
-### Eventos a publicar (Observer)
+### 1. Levantar infraestructura
 
-Cuando un envío termina de procesarse, el use case publica al broker un evento en el topic correspondiente al estado:
-
-- `shipment.dispatched` → status `DELIVERED`
-- `shipment.in_customs` → status `IN_CUSTOMS`
-- `shipment.failed` → status `FAILED`
-
-**Dos consumers independientes** deben suscribirse a esos topics:
-- `NotificationsConsumer`: simula envío de notificación (console.log estructurado).
-- `AuditConsumer`: registra la traza de auditoría (topic, offset, shipmentId, timestamp).
-
-El payload del evento incluye como mínimo: `shipmentId`, `senderId`, `recipientId`, `declaredValue`, `shippingCost`, `type`, `status`, `timestamp`.
-
-## 3. Endpoints mínimos
-
-```
-POST   /api/customers                crear cliente
-GET    /api/customers                 listar
-GET    /api/customers/:id             por id
-PATCH  /api/customers/:id             actualizar (name, role)
-DELETE /api/customers/:id             desactivar (soft delete)
-
-POST   /api/shipments                 crear envío (ejecuta Strategy + publica evento)
-GET    /api/shipments/:id             por id
-GET    /api/shipments/customer/:id    envíos enviados o recibidos por el cliente
+```bash
+docker compose up -d
 ```
 
-Códigos esperados: `201` en creación, `200` en lectura/actualización, `204` en delete, `400` validación, `404` no encontrado, `409` conflicto (p.ej. email duplicado).
+Servicios:
 
-## 4. Requisitos técnicos obligatorios
+- PostgreSQL: `localhost:5432`
+- Kafka: `localhost:9092`
+- Kafka UI: `http://localhost:8090`
 
-### Arquitectura
-- **Hexagonal** por módulo: cada módulo (`customers`, `shipments`, `shared/events`, `notifications`) con carpetas `domain/`, `application/`, `infrastructure/`.
-- El dominio **no** puede importar clases del ORM, del cliente del broker, ni de HTTP.
-- Los contratos (ports/interfaces) viven en `domain/ports`; sus implementaciones en `infrastructure/`.
+### 2. Ejecutar la aplicación
 
-### Patrones
-- **Strategy**: un `ShippingStrategyPort` con `validate()`, `calculateCost()` y `execute()`. Una clase por cada tipo (4 en total). El use case **no** debe contener un `switch`/`if` que instancie estrategias; usa un `Map` / registro / factory para seleccionarla.
-- **Observer**: port `EventPublisher` + adapter del broker que elijas (Kafka, RabbitMQ, Redis Streams, NATS). Dos consumers suscritos a los mismos topics demostrando el desacople.
+En Windows PowerShell:
 
-### Persistencia
-- ORM real contra BD real (PostgreSQL, MySQL o MongoDB). Nada de in-memory.
-- **Mapper pattern**: la entidad del ORM es **distinta** del modelo de dominio. Un `Mapper` convierte en ambos sentidos.
-- `metadata` se guarda como JSON/JSONB.
+```powershell
+$env:JAVA_HOME="C:\Program Files\Java\jdk-23"
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\mvnw.cmd spring-boot:run
+```
 
-### API
-- DTOs con validación declarativa (`class-validator`, Jakarta Validation, FluentValidation, etc.).
-- Excepciones de dominio custom mapeadas a códigos HTTP (`ShipmentNotFoundException` → 404, `InvalidShipmentException` → 400, `EmailAlreadyExistsException` → 409).
-- **Swagger / OpenAPI publicado en `/api/docs`** con schemas de request y response. Este es el único add-on obligatorio respecto al `bank-api` de referencia.
+Si el wrapper falla en tu entorno, puedes usar Maven instalado:
 
-### Contenedores
-- `docker-compose.yml` que levante al menos BD y broker. La app puede correr en host.
-- Variables sensibles en `.env`, no hardcodeadas.
+```powershell
+cmd /c "set JAVA_HOME=C:\Program Files\Java\jdk-23&& set PATH=%JAVA_HOME%\bin;%PATH%&& C:\workspace_maven\apache-maven-3.9.11\bin\mvn.cmd spring-boot:run"
+```
 
-## 5. Stack
+### 3. URLs importantes
 
-Es **libre**. Puedes usar:
-- NestJS + TypeORM (como el `bank-api`)
-- Spring Boot + JPA
-- .NET + EF Core
-- Go + GORM
-- cualquier combinación equivalente
+- Swagger UI: `http://localhost:8080/api/docs`
+- OpenAPI JSON: `http://localhost:8080/api/openapi`
+- Kafka UI: `http://localhost:8090`
 
-Siempre y cuando cumplas arquitectura hexagonal, los dos patrones, persistencia real, broker real y Swagger.
+## Variables de entorno
 
-## 6. Entregables
+Revisa `.env.example`. Las principales son:
 
-1. Repositorio Git público o compartido con el instructor.
-2. `README.md` con:
-   - Stack elegido y por qué.
-   - Pasos exactos para levantar: `docker-compose up` → cómo correr la app → URL de Swagger → URL de la UI del broker si aplica.
-   - Diagrama o descripción breve de la arquitectura y lista de patrones aplicados.
-3. `docker-compose.yml` funcional.
-4. Código fuente organizado según lo exigido.
-5. Swagger accesible en `/api/docs`.
-6. Colección Postman o archivo `.http` con ejemplos de **cada una de las 4 estrategias** y al menos un caso de error (p.ej. `EXPRESS` con peso 10 kg → 400).
-7. Commits atómicos con mensajes claros.
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `SPRING_DATASOURCE_URL`
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`
 
-## 7. Fuera de alcance (para no desbordar el sprint)
+## Endpoints mínimos
 
-No se exige (no se penaliza su ausencia): autenticación JWT, tests automatizados con cobertura mínima, CI/CD, migraciones con Flyway/Liquibase, observabilidad avanzada. Si los incluyes es bonus, no requisito.
+### Customers
 
-## 8. Referencias del `bank-api` que puedes consultar
+- `POST /api/customers`
+- `GET /api/customers`
+- `GET /api/customers/{id}`
+- `PATCH /api/customers/{id}`
+- `DELETE /api/customers/{id}`
 
-- Contrato Strategy: `bank-api/src/transfers/domain/ports/transfer-strategy.port.ts`
-- 4 estrategias concretas: `bank-api/src/transfers/application/strategies/`
-- Selección sin switch (Map como provider): `bank-api/src/transfers/transfers.module.ts`
-- Publicación de evento dentro del use case: `bank-api/src/transfers/application/use-cases/execute-transfer.use-case.ts`
-- Port + adapter del Observer: `bank-api/src/shared/events/`
-- Dos consumers independientes: `bank-api/src/notifications/application/handlers/`
-- Mapper Entity ↔ Domain: `bank-api/src/transfers/infrastructure/persistence/transfer.mapper.ts`
-- Docker Compose de referencia: `Sesion2/docker-compose.yml`
+### Shipments
 
-**No copies y pegues cambiando nombres.** Tradúcelo. El evaluador mirará si entendiste los patrones o solo renombraste clases.
+- `POST /api/shipments`
+- `GET /api/shipments/{id}`
+- `GET /api/shipments/customer/{id}`
 
-## 9. Criterio de aprobación
+## Eventos publicados
 
-Rúbrica de **100 puntos** en `EVALUATION_RUBRIC.md`. Se aprueba con **70 puntos o más**.
+- `shipment.dispatched` para `DELIVERED`
+- `shipment.in_customs` para `IN_CUSTOMS`
+- `shipment.failed` para `FAILED`
 
-¡Éxitos!
+Los consumers registran:
+
+- notificación estructurada
+- auditoría con `topic`, `offset`, `shipmentId` y `timestamp`
+
+## Ejemplos rápidos
+
+Hay una colección manual en [requests.http](./requests.http) con:
+
+- creación de clientes
+- las 4 estrategias
+- un caso de error `EXPRESS` con `weightKg=10`
+
+## Tests
+
+Ejecutar:
+
+```powershell
+cmd /c "set JAVA_HOME=C:\Program Files\Java\jdk-23&& set PATH=%JAVA_HOME%\bin;%PATH%&& C:\workspace_maven\apache-maven-3.9.11\bin\mvn.cmd test"
+```
+
+Actualmente hay pruebas unitarias para las cuatro estrategias de envío.

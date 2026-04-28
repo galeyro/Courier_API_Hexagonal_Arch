@@ -1,0 +1,93 @@
+### Crear cliente remitente
+POST http://localhost:8080/api/customers
+Content-Type: application/json
+
+{
+  "name": "Alice Sender",
+  "email": "alice@example.com",
+  "password": "Password123",
+  "role": "SENDER"
+}
+
+### Crear cliente destinatario
+POST http://localhost:8080/api/customers
+Content-Type: application/json
+
+{
+  "name": "Bob Recipient",
+  "email": "bob@example.com",
+  "password": "Password123",
+  "role": "SENDER"
+}
+
+### STANDARD
+POST http://localhost:8080/api/shipments
+Content-Type: application/json
+
+{
+  "senderId": "11111111-1111-1111-1111-111111111111",
+  "recipientId": "22222222-2222-2222-2222-222222222222",
+  "declaredValue": 1000000,
+  "type": "STANDARD",
+  "metadata": {
+    "weightKg": 10
+  }
+}
+
+### EXPRESS
+POST http://localhost:8080/api/shipments
+Content-Type: application/json
+
+{
+  "senderId": "11111111-1111-1111-1111-111111111111",
+  "recipientId": "22222222-2222-2222-2222-222222222222",
+  "declaredValue": 2500000,
+  "type": "EXPRESS",
+  "metadata": {
+    "weightKg": 4
+  }
+}
+
+### INTERNATIONAL
+POST http://localhost:8080/api/shipments
+Content-Type: application/json
+
+{
+  "senderId": "11111111-1111-1111-1111-111111111111",
+  "recipientId": "22222222-2222-2222-2222-222222222222",
+  "declaredValue": 1000000,
+  "type": "INTERNATIONAL",
+  "metadata": {
+    "destinationCountry": "EC",
+    "customsDeclaration": "Books"
+  }
+}
+
+### THIRD_PARTY_CARRIER
+POST http://localhost:8080/api/shipments
+Content-Type: application/json
+
+{
+  "senderId": "11111111-1111-1111-1111-111111111111",
+  "recipientId": "22222222-2222-2222-2222-222222222222",
+  "declaredValue": 800000,
+  "type": "THIRD_PARTY_CARRIER",
+  "metadata": {
+    "carrierName": "DHL",
+    "externalTrackingId": "TRK-001"
+  }
+}
+
+### Error esperado: EXPRESS con peso > 5 kg
+POST http://localhost:8080/api/shipments
+Content-Type: application/json
+
+{
+  "senderId": "11111111-1111-1111-1111-111111111111",
+  "recipientId": "22222222-2222-2222-2222-222222222222",
+  "declaredValue": 2500000,
+  "type": "EXPRESS",
+  "metadata": {
+    "weightKg": 10
+  }
+}
