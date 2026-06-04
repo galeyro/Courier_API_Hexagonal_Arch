@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+		"-//Checkstyle//DTD SuppressionXpathFilter Configuration 1.2//EN"
+		"https://checkstyle.org/dtds/suppressions_1_2_xpath.dtd">
+
+<suppressions>
+	<suppress-xpath checks="MissingJavadocMethod|MissingJavadocType|DesignForExtension"
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='Data' or @text='Getter' or @text='Setter' or @text='Builder' or @text='NoArgsConstructor' or @text='AllArgsConstructor' or @text='RequiredArgsConstructor' or @text='Value']]//METHOD_DEF"/>
+
+	<suppress-xpath checks="MissingJavadocMethod"
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='RestController' or @text='Controller']]//METHOD_DEF"/>
+
+	<suppress-xpath checks="MissingJavadocMethod"
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='Configuration']]//METHOD_DEF"/>
+
+	<suppress-xpath checks="MissingJavadocType"
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='SpringBootApplication' or @text='Configuration' or @text='RestController' or @text='Entity' or @text='Component' or @text='Service']]"/>
+
+	<suppress-xpath checks="DesignForExtension"
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='RestController' or @text='Configuration' or @text='Service' or @text='Component']]//METHOD_DEF"/>
+
+	<suppress files=".*[/\\]dto[/\\].*" checks="MissingJavadocType|MissingJavadocMethod|DesignForExtension"/>
+	<suppress files=".*[/\\]exception[/\\].*" checks="MissingJavadocType|MissingJavadocMethod"/>
+	<suppress files=".*[/\\]model[/\\].*" checks="MissingJavadocType|MissingJavadocMethod"/>
+	<suppress files=".*[/\\]config[/\\].*" checks="MissingJavadocType|MissingJavadocMethod|DesignForExtension"/>
+	<suppress files=".*Application\.java$" checks="MissingJavadocType|MissingJavadocMethod"/>
+
+	<suppress files=".*[/\\]target[/\\].*" checks=".*"/>
+</suppressions>

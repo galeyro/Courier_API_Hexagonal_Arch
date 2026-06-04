@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter xmlns="https://spotbugs.github.io/spotbugs/filter/">
+	<Match>
+		<Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Package name="com.courier.api.customers.application.dto"/>
+	</Match>
+	<Match>
+		<Package name="com.courier.api.shipments.application.dto"/>
+	</Match>
+	<Match>
+		<Package name="com.courier.api.shared.events.domain.model"/>
+	</Match>
+	<Match>
+		<Source name="~.*\_bootstrap\$.*"/>
+	</Match>
+</FindBugsFilter>
