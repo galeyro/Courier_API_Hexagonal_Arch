@@ -5,7 +5,7 @@ import com.courier.api.shipments.domain.model.Shipment;
 import java.math.BigDecimal;
 import java.util.Map;
 
-abstract class AbstractShippingStrategy {
+class AbstractShippingStrategy {
 
     protected void requireMetadataField(Map<String, Object> metadata, String key) {
         Object value = metadata.get(key);
@@ -21,7 +21,7 @@ abstract class AbstractShippingStrategy {
         try {
             return new BigDecimal(value.toString());
         } catch (NumberFormatException ex) {
-            throw new InvalidShipmentException("metadata." + fieldName + " must be a valid number");
+            throw new InvalidShipmentException("metadata." + fieldName + " must be a valid number", ex);
         }
     }
 

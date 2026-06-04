@@ -7,4 +7,8 @@ public class InvalidShipmentException extends ValidationException {
     public InvalidShipmentException(String message) {
         super(message);
     }
+
+    public InvalidShipmentException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
