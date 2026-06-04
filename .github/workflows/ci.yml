@@ -65,3 +65,32 @@ jobs:
         with:
           name: spotbugs-report
           path: target/spotbugsXml.xml
+
+      - name: Prepare Pages site
+        run: |
+          mkdir -p pages-site/site
+          cp target/quality-dashboard.html pages-site/index.html
+          cp -r target/site/jacoco pages-site/site/
+          cp target/checkstyle-result.xml pages-site/
+          cp target/pmd.xml pages-site/
+          cp target/spotbugsXml.xml pages-site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site
+
+  deploy-reports:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
