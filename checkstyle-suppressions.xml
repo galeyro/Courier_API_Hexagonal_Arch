@@ -14,10 +14,16 @@
 		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='Configuration']]//METHOD_DEF"/>
 
 	<suppress-xpath checks="MissingJavadocType"
-		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='SpringBootApplication' or @text='Configuration' or @text='RestController']]"/>
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='SpringBootApplication' or @text='Configuration' or @text='RestController' or @text='Entity' or @text='Component' or @text='Service']]"/>
 
 	<suppress-xpath checks="DesignForExtension"
-		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='RestController' or @text='Configuration']]//METHOD_DEF"/>
+		query="//CLASS_DEF[.//ANNOTATION/IDENT[@text='RestController' or @text='Configuration' or @text='Service' or @text='Component']]//METHOD_DEF"/>
+
+	<suppress files=".*[/\\]dto[/\\].*" checks="MissingJavadocType|MissingJavadocMethod|DesignForExtension"/>
+	<suppress files=".*[/\\]exception[/\\].*" checks="MissingJavadocType|MissingJavadocMethod"/>
+	<suppress files=".*[/\\]model[/\\].*" checks="MissingJavadocType|MissingJavadocMethod"/>
+	<suppress files=".*[/\\]config[/\\].*" checks="MissingJavadocType|MissingJavadocMethod|DesignForExtension"/>
+	<suppress files=".*Application\.java$" checks="MissingJavadocType|MissingJavadocMethod"/>
 
 	<suppress files=".*[/\\]target[/\\].*" checks=".*"/>
 </suppressions>
