@@ -8,6 +8,7 @@ import com.courier.api.customers.domain.exception.EmailAlreadyExistsException;
 import com.courier.api.customers.domain.model.Customer;
 import com.courier.api.customers.domain.ports.CustomerRepositoryPort;
 import com.courier.api.customers.domain.ports.PasswordHasherPort;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,7 @@ public class CustomerCommandUseCase {
 
         Customer customer = Customer.newCustomer(
                 request.name().trim(),
-                request.email().trim().toLowerCase(),
+                request.email().trim().toLowerCase(Locale.ROOT),
                 passwordHasher.hash(request.password()),
                 request.role()
         );
