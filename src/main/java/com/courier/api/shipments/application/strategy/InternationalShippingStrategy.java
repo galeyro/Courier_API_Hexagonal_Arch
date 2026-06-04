@@ -5,11 +5,13 @@ import com.courier.api.shipments.domain.model.Shipment;
 import com.courier.api.shipments.domain.model.ShipmentStatus;
 import com.courier.api.shipments.domain.model.ShipmentType;
 import com.courier.api.shipments.domain.ports.ShippingStrategyPort;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import org.springframework.stereotype.Component;
 
+/**
+ * Strategy for international shipments.
+ */
 @Component
 public class InternationalShippingStrategy extends AbstractShippingStrategy implements ShippingStrategyPort {
 

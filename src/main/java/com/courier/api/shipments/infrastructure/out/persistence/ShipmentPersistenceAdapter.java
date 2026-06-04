@@ -3,18 +3,23 @@ package com.courier.api.shipments.infrastructure.out.persistence;
 import com.courier.api.shipments.domain.model.Shipment;
 import com.courier.api.shipments.domain.ports.ShipmentRepositoryPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
+/**
+ * Adapter implementing shipment repository port using JPA.
+ */
 @Component
 public class ShipmentPersistenceAdapter implements ShipmentRepositoryPort {
 
     private final ShipmentJpaRepository shipmentJpaRepository;
     private final ShipmentEntityMapper mapper;
 
+    /**
+     * Constructs a new ShipmentPersistenceAdapter.
+     */
     public ShipmentPersistenceAdapter(ShipmentJpaRepository shipmentJpaRepository, ObjectMapper objectMapper) {
         this.shipmentJpaRepository = shipmentJpaRepository;
         this.mapper = new ShipmentEntityMapper(objectMapper);

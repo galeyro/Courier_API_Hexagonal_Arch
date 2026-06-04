@@ -2,7 +2,6 @@ package com.courier.api.shipments.application.strategy;
 
 import com.courier.api.shipments.domain.exception.InvalidShipmentException;
 import com.courier.api.shipments.domain.model.Shipment;
-
 import java.math.BigDecimal;
 import java.util.Map;
 

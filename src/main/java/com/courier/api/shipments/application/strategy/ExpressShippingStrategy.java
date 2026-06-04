@@ -5,10 +5,12 @@ import com.courier.api.shipments.domain.model.Shipment;
 import com.courier.api.shipments.domain.model.ShipmentStatus;
 import com.courier.api.shipments.domain.model.ShipmentType;
 import com.courier.api.shipments.domain.ports.ShippingStrategyPort;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
+/**
+ * Strategy for express shipments.
+ */
 @Component
 public class ExpressShippingStrategy extends AbstractShippingStrategy implements ShippingStrategyPort {
 

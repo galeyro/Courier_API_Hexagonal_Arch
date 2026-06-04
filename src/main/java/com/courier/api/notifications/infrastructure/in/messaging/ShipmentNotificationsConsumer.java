@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Kafka consumer for shipment notification events.
+ */
 @Component
 public class ShipmentNotificationsConsumer {
 
@@ -15,10 +18,20 @@ public class ShipmentNotificationsConsumer {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructs a new ShipmentNotificationsConsumer.
+     *
+     * @param objectMapper the JSON object mapper
+     */
     public ShipmentNotificationsConsumer(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Handles shipment notification events.
+     *
+     * @param record the Kafka consumer record
+     */
     @KafkaListener(
             topics = {"shipment.dispatched", "shipment.in_customs", "shipment.failed"},
             groupId = "notifications-consumer"
@@ -35,6 +48,11 @@ public class ShipmentNotificationsConsumer {
         );
     }
 
+    /**
+     * Handles shipment audit events.
+     *
+     * @param record the Kafka consumer record
+     */
     @KafkaListener(
             topics = {"shipment.dispatched", "shipment.in_customs", "shipment.failed"},
             groupId = "audit-consumer"

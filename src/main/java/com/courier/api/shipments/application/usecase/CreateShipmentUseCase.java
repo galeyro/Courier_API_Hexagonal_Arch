@@ -11,25 +11,32 @@ import com.courier.api.shipments.application.dto.ShipmentResponse;
 import com.courier.api.shipments.domain.exception.InvalidShipmentException;
 import com.courier.api.shipments.domain.model.Shipment;
 import com.courier.api.shipments.domain.model.ShipmentStatus;
+import com.courier.api.shipments.domain.model.ShipmentType;
 import com.courier.api.shipments.domain.ports.ShipmentRepositoryPort;
 import com.courier.api.shipments.domain.ports.ShippingStrategyPort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Use case for creating shipments.
+ */
 @Service
 public class CreateShipmentUseCase {
 
     private final ShipmentRepositoryPort shipmentRepository;
     private final CustomerRepositoryPort customerRepository;
     private final EventPublisher eventPublisher;
-    private final Map<com.courier.api.shipments.domain.model.ShipmentType, ShippingStrategyPort> strategies;
+    private final Map<ShipmentType, ShippingStrategyPort> strategies;
 
+    /**
+     * Constructs a new CreateShipmentUseCase.
+     */
     public CreateShipmentUseCase(
             ShipmentRepositoryPort shipmentRepository,
             CustomerRepositoryPort customerRepository,
@@ -39,9 +46,16 @@ public class CreateShipmentUseCase {
         this.shipmentRepository = shipmentRepository;
         this.customerRepository = customerRepository;
         this.eventPublisher = eventPublisher;
-        this.strategies = strategies.stream().collect(Collectors.toMap(ShippingStrategyPort::supportedType, Function.identity()));
+        this.strategies = strategies.stream()
+                .collect(Collectors.toMap(
+                        ShippingStrategyPort::supportedType,
+                        Function.identity()
+                ));
     }
 
+    /**
+     * Creates a new shipment with the given request.
+     */
     @Transactional
     public ShipmentResponse create(CreateShipmentRequest request) {
         validateCommonRules(request.senderId(), request.recipientId(), request.declaredValue());
@@ -78,7 +92,10 @@ public class CreateShipmentUseCase {
         return ShipmentMapper.toResponse(savedShipment);
     }
 
-    private void validateCommonRules(UUID senderId, UUID recipientId, java.math.BigDecimal declaredValue) {
+    /**
+     * Validates common shipment rules.
+     */
+    private void validateCommonRules(UUID senderId, UUID recipientId, BigDecimal declaredValue) {
         if (senderId.equals(recipientId)) {
             throw new InvalidShipmentException("Sender and recipient must be different customers");
         }
@@ -96,6 +113,9 @@ public class CreateShipmentUseCase {
         }
     }
 
+    /**
+     * Resolves the Kafka topic based on shipment status.
+     */
     private String resolveTopic(ShipmentStatus status) {
         return switch (status) {
             case DELIVERED -> EventTopics.SHIPMENT_DISPATCHED;

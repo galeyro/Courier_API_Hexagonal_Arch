@@ -50,7 +50,11 @@ public class Shipment {
             Map<String, Object> metadata
     ) {
         LocalDateTime now = LocalDateTime.now();
-        return new Shipment(null, senderId, recipientId, declaredValue, BigDecimal.ZERO, type, ShipmentStatus.PENDING, metadata, now, now);
+        return new Shipment(
+                null, senderId, recipientId, declaredValue,
+                BigDecimal.ZERO, type, ShipmentStatus.PENDING,
+                metadata, now, now
+        );
     }
 
     public Shipment processed(BigDecimal newShippingCost, ShipmentStatus newStatus) {

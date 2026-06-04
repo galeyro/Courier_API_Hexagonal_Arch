@@ -4,18 +4,26 @@ import com.courier.api.shipments.domain.model.Shipment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Maps between shipment domain objects and JPA entities.
+ */
 public class ShipmentEntityMapper {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructs a new ShipmentEntityMapper.
+     */
     public ShipmentEntityMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Converts a domain object to a JPA entity.
+     */
     public ShipmentEntity toEntity(Shipment shipment) {
         ShipmentEntity entity = new ShipmentEntity();
         entity.setId(shipment.getId());
@@ -31,6 +39,9 @@ public class ShipmentEntityMapper {
         return entity;
     }
 
+    /**
+     * Converts a JPA entity to a domain object.
+     */
     public Shipment toDomain(ShipmentEntity entity) {
         return new Shipment(
                 entity.getId(),

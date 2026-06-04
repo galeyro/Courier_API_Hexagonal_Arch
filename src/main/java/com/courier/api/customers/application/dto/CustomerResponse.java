@@ -1,7 +1,6 @@
 package com.courier.api.customers.application.dto;
 
 import com.courier.api.customers.domain.model.CustomerRole;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 

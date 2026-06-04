@@ -2,17 +2,24 @@ package com.courier.api.customers.infrastructure.out.persistence;
 
 import com.courier.api.customers.domain.model.Customer;
 import com.courier.api.customers.domain.ports.CustomerRepositoryPort;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
+/**
+ * Adapter implementing customer repository port using JPA.
+ */
 @Component
 public class CustomerPersistenceAdapter implements CustomerRepositoryPort {
 
     private final CustomerJpaRepository customerJpaRepository;
 
+    /**
+     * Constructs a new CustomerPersistenceAdapter.
+     *
+     * @param customerJpaRepository the JPA repository for customer entities
+     */
     public CustomerPersistenceAdapter(CustomerJpaRepository customerJpaRepository) {
         this.customerJpaRepository = customerJpaRepository;
     }
